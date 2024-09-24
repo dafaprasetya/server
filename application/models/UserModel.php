@@ -11,6 +11,11 @@
 
         public function user_register($data){
             $this->db->insert('users', $data);
+            if($this->db->affected_rows() > 0){
+                return $this->db->insert_id();
+            }else {
+                return false;
+            }
         }
 
         public function user_login($email, $password) {
@@ -19,7 +24,7 @@
                 $data_user = $query->row();
                 if (password_verify($password, $data_user->password)) {
 
-                    $this->session->set_userdata('username', $username);
+                    $this->session->set_userdata('username', $email);
                     $this->session->set_userdata('nama_lengkap', $data_user->nama_lengkap);
                     $this->session->set_userdata('is_login', TRUE);
                     return TRUE;

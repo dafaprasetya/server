@@ -70,9 +70,18 @@ class Auth extends CI_Controller {
 				'email' => $this->input->post('email'),
 				'password' => password_hash($this->input->post('password'),PASSWORD_DEFAULT)
 			);
-			$this->UserModel->user_register($data);
-			$this->session->set_flashdata('success', 'Akun Telah Berhasil Dibuat!');
-			$this->load->view('login');
+			$user_id = $this->UserModel->user_register($data);
+			if ($user_id) {
+				$folder = './strg/'.$user_id;
+				if(!is_dir($folder)){
+					mkdir($folder, 0777, true);
+				}
+				$this->session->set_flashdata('success', 'Berhasil!, Akun Telah Berhasil Dibuat dengan penyimpanan 16GB!');
+				redirect('login');
+			}else{
+				$this->session->set_flashdata('Error', 'Gagal, Silahkan Coba lagi');
+				redirect('auth/register');
+			}
 		}
 	}
 }
