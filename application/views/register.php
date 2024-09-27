@@ -29,7 +29,7 @@
 
     <p>
         <label for="confirm_password">Confirm Password:</label>
-        <input type="password" name="confirm_password">
+        <input type="password" name="password_confirm">
     </p>
 
     <p>

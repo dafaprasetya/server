@@ -21,6 +21,7 @@ class Auth extends CI_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model('UserModel');
+        $this->load->model('StorageModel');
 		$this->load->library('form_validation');
         $this->load->library('session');
         $this->load->helper('url');
@@ -58,26 +59,38 @@ class Auth extends CI_Controller {
 		if ($this->session->userdata('is_login')) {
 			redirect('home');
 		}
-		$this->form_validation->set_rules('username', 'Username', 'required');
+		$this->form_validation->set_rules('username', 'Username', 'required|is_unique[users.username]');
 		$this->form_validation->set_rules('email', 'Email', 'required|valid_email|is_unique[users.email]');
         $this->form_validation->set_rules('password', 'Password', 'required');
-        $this->form_validation->set_rules('password', 'Password', 'required|matches[password]');
+        $this->form_validation->set_rules('password_confirm', 'Password Confirm', 'required|matches[password]');
 		if ($this->form_validation->run() == FALSE) {
             $this->load->view('register');
         } else {
 			$data = array(
 				'username' => $this->input->post('username'),
 				'email' => $this->input->post('email'),
-				'password' => password_hash($this->input->post('password'),PASSWORD_DEFAULT)
+				'password' => $this->input->post('password'),
 			);
 			$user_id = $this->UserModel->user_register($data);
 			if ($user_id) {
-				$folder = './strg/'.$user_id;
-				if(!is_dir($folder)){
-					mkdir($folder, 0777, true);
+				$folder = './strg/'.$data['username'];
+				$dataStorage= array(
+					'path' => $folder,
+					'pemilikUname'=> $data['username'],
+					'ukuran'=> '20GB',
+				);
+				$cStorage = $this->StorageModel->createStorage($dataStorage);
+				if ($cStorage) {
+					if(!is_dir($folder)){
+						mkdir($folder, 0777, true);
+					}
+					$this->session->set_flashdata('success', 'Berhasil!, Akun Telah Berhasil Dibuat dengan penyimpanan 16GB!');
+					redirect('auth');
 				}
-				$this->session->set_flashdata('success', 'Berhasil!, Akun Telah Berhasil Dibuat dengan penyimpanan 16GB!');
-				redirect('login');
+				else {
+					$this->session->set_flashdata('Error', 'Gagal, Silahkan Coba lagi');
+					redirect('auth/register');
+				}
 			}else{
 				$this->session->set_flashdata('Error', 'Gagal, Silahkan Coba lagi');
 				redirect('auth/register');

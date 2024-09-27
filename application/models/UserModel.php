@@ -10,12 +10,13 @@
         }
 
         public function user_register($data){
-            $this->db->insert('users', $data);
-            if($this->db->affected_rows() > 0){
-                return $this->db->insert_id();
-            }else {
-                return false;
-            }
+            $user_registered = array(
+                'username' => $data['username'],
+                'email' => $data['email'],
+                'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+            );
+            $this->db->insert('users', $user_registered);
+            return true;
         }
 
         public function user_login($email, $password) {
